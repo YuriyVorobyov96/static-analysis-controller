@@ -9,6 +9,7 @@ sys.path.append('./src/scanner')
 from http_server import HTTP
 from project_controller import ProjectController
 from token_controller import TokenController
+from scan_controller import ScanController
 
 class App(BaseHTTPRequestHandler):
     @classmethod
@@ -19,6 +20,7 @@ class App(BaseHTTPRequestHandler):
     def use_controllers(cls):
       cls.project_controller = ProjectController()
       cls.token_controller = TokenController()
+      cls.scan_controller = ScanController()
 
     def do_GET(self):
         if self.path == '/help':
@@ -28,7 +30,7 @@ class App(BaseHTTPRequestHandler):
           return self.project_controller.search_project(self)
 
         if self.path == '/scanner/scan/issues':
-            return self.get_issues()
+          return self.scan_controller.get_issues(self)
 
         return self.http.send_not_found_error(self)
 
@@ -40,63 +42,9 @@ class App(BaseHTTPRequestHandler):
         return self.token_controller.create_analysis_token(self)
 
       if self.path == '/scanner/scan/init':
-        return self.init_scan()
+        return self.scan_controller.init_scan(self)
 
       return self.http.send_not_found_error(self)
-
-    def init_scan(self):
-      data = self.get_request_body()
-
-      try:
-        if data:
-          if not 'source' in data or not isinstance(data['source'], str):
-              raise Exception('"source" must be a string')
-          if not 'token' in data or not isinstance(data['token'], str):
-              raise Exception('"token" must be a string')
-      except Exception as err:
-        return self.send_bad_request_error(err)
-
-      try:
-        cmd = f"sonar-scanner \
-                      -Dsonar.projectKey=test \
-                      -Dsonar.sources={data['source']} \
-                      -Dsonar.host.url=http://localhost:9000 \
-                      -Dsonar.token={data['token']}"
-
-        subprocess.run(cmd, shell=True, universal_newlines=True, check=True)
-      except Exception as err:
-        return self.send_bad_request_error(err)
-
-      return self.send_result(200)
-
-    def get_issues(self):
-      data = self.get_request_body()
-
-      try:
-        if data:
-          if 'name' in data and not isinstance(data['name'], str):
-            raise Exception('"name" must be a string')
-          if 'status' in data and not isinstance(data['status'], str):
-            raise Exception('"status" must be a string')
-          if 'type' in data and not isinstance(data['type'], str):
-            raise Exception('"type" must be a string')
-          if 'page' in data and not isinstance(data['page'], int):
-            raise Exception('"page" must be an integer')
-      except Exception as err:
-        return self.send_bad_request_error(err)
-
-      payload = dict()
-
-      if 'name' in data:
-          payload['components'] = data['name']
-      if 'status' in data:
-          payload['issueStatuses'] = data['status']
-      if 'type' in data:
-          payload['impactSoftwareQualities'] = data['type']
-      if 'page' in data:
-          payload['p'] = data['page']
-
-      self.send_request('GET', 'http://localhost:9000/api/issues/search', payload)
 
     def __help_message(self):
         message = ('Welcome to static analysis controller\n'
