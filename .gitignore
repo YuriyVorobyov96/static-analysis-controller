@@ -2,3 +2,4 @@
 .scannerwork
 *.pyc
 *.pyo
+.env

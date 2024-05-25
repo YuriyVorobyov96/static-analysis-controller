@@ -1,6 +1,9 @@
-import sys
+from dotenv import load_dotenv
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import socketserver
+import sys
+
+load_dotenv()
 
 sys.path.append('./src/www')
 sys.path.append('./src/scanner')

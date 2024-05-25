@@ -1,6 +1,10 @@
-import requests
 import json
+import os
+import requests
 from urllib.parse import urlparse, parse_qs
+
+API_KEY = os.environ.get('API_KEY', 'AUTH-TOKEN')
+SONARQUBE_TOKEN = os.environ.get('SONARQUBE_TOKEN', '')
 
 class HTTPUtils():
   def send_request(self, ctx, method, target, payload):
@@ -11,8 +15,7 @@ class HTTPUtils():
       return self.send_bad_request_error(ctx, err)
 
     try:
-      # TODO: test token, remove for production
-      headers = { "Authorization": "Bearer squ_1bb3dc40d54c5d1df2b5255aa530bdc2820bfb1b" }
+      headers = { 'Authorization': SONARQUBE_TOKEN }
 
       data = '?'
 
@@ -115,8 +118,7 @@ class HTTPUtils():
     return content_type == 'application/json'
 
   def __check_auth(self, ctx):
-    # TODO: test token, remove for production
-    if (ctx.headers.get('Authorization') != 'AUTH-TOKEN'):
+    if (ctx.headers.get('Authorization') != API_KEY):
       raise Exception('Invalid authorization token')
   
   def __check_json_request_content_type(self, ctx):
