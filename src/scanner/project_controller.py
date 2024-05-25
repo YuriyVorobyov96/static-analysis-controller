@@ -27,6 +27,11 @@ class ProjectController():
       if data:
         if 'query' in data and not isinstance(data['query'], str):
           raise Exception('"query" must be a string')
+        if 'page' in data:
+          try:
+            data['page'] = int(data['page'])
+          except:
+            raise Exception('"page" must be an integer')
     except Exception as err:
       return ctx.http.send_bad_request_error(ctx, err)
 
@@ -34,5 +39,7 @@ class ProjectController():
 
     if 'query' in data:
       payload['q'] = data['query']
+    if 'page' in data:
+      payload['p'] = data['page']
 
     ctx.http.send_request(ctx, 'GET', 'http://localhost:9000/api/projects/search', payload)

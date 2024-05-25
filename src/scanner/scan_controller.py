@@ -12,8 +12,11 @@ class ScanController():
           raise Exception('"status" must be a string')
         if 'type' in data and not isinstance(data['type'], str):
           raise Exception('"type" must be a string')
-        if 'page' in data and not isinstance(data['page'], int):
-          raise Exception('"page" must be an integer')
+        if 'page' in data:
+          try:
+            data['page'] = int(data['page'])
+          except:
+            raise Exception('"page" must be an integer')
     except Exception as err:
       return ctx.http.send_bad_request_error(ctx, err)
 
