@@ -70,7 +70,7 @@ class HTTPUtils():
     except:
       return self.send_bad_request_error(ctx, 'Invalid URL format')
 
-  def send_result(self, ctx, code=200, result='OK'):
+  def send_result(self, ctx, code=200, result=json.dumps({ 'msg': 'OK' })):
     self.__do_response(ctx, code, result)
 
   def __sent_http_request(self, target, method, headers, payload):
