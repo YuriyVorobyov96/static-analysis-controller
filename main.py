@@ -8,6 +8,7 @@ sys.path.append('./src/scanner')
 
 from http_server import HTTP
 from project_controller import ProjectController
+from token_controller import TokenController
 
 class App(BaseHTTPRequestHandler):
     @classmethod
@@ -17,6 +18,7 @@ class App(BaseHTTPRequestHandler):
     @classmethod
     def use_controllers(cls):
       cls.project_controller = ProjectController()
+      cls.token_controller = TokenController()
 
     def do_GET(self):
         if self.path == '/help':
@@ -35,7 +37,7 @@ class App(BaseHTTPRequestHandler):
         return self.project_controller.create_project(self)
 
       if self.path == '/scanner/token/create':
-          return self.create_analysis_token()
+        return self.token_controller.create_analysis_token(self)
 
       if self.path == '/scanner/scan/init':
         return self.init_scan()
