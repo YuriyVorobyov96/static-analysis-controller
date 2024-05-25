@@ -2,7 +2,7 @@ import requests
 import json
 from urllib.parse import urlparse, parse_qs
 
-class HTTP():
+class HTTPUtils():
   def send_request(self, ctx, method, target, payload):
     try:
       self.__check_auth(ctx)

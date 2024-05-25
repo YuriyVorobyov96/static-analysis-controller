@@ -5,7 +5,7 @@ import socketserver
 sys.path.append('./src/www')
 sys.path.append('./src/scanner')
 
-from http_server import HTTP
+from http_utils import HTTPUtils
 from project_controller import ProjectController
 from token_controller import TokenController
 from scan_controller import ScanController
@@ -13,7 +13,7 @@ from scan_controller import ScanController
 class App(BaseHTTPRequestHandler):
     @classmethod
     def use_http(cls):
-      cls.http = HTTP()
+      cls.http = HTTPUtils()
 
     @classmethod
     def use_controllers(cls):
