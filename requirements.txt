@@ -1,4 +1,3 @@
 requests
 python-dotenv
 ruamel.yaml
-json2html
