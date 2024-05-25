@@ -77,6 +77,9 @@ class App(BaseHTTPRequestHandler):
       if path == '/scanner/scan/init':
         return self.scan_controller.init_scan(self)
 
+      if path == '/scanner/scan/analysis':
+        return self.scan_controller.full_analysis(self)
+
       return self.http.send_not_found_error(self)
 
 
