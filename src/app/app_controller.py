@@ -1,4 +1,8 @@
+import json
 import os
+from ruamel.yaml import YAML
+
+yaml = YAML(typ='safe')
 
 class AppController:
   def help_message(self, ctx):
@@ -57,3 +61,12 @@ class AppController:
     except Exception as err:
       print('Read file error:', os.path.join(dir, file_name), err)
       return ctx.http.send_bad_request_error(ctx, 'Serve file error')
+
+  def get_docs_raw(self, ctx, doc_dir):
+    try:
+      path = doc_dir / 'openapi.yaml'
+      with open(path) as f:
+        ctx.http.send_result(ctx, 200, json.dumps(yaml.load(f)))
+    except Exception as err:
+      print('Documentation parse error: ', err)
+      ctx.http.send_bad_request_error(ctx, 'Exception while load openapi documentation')

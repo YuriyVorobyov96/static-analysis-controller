@@ -1,9 +1,7 @@
 from dotenv import load_dotenv
 from http.server import HTTPServer, BaseHTTPRequestHandler, SimpleHTTPRequestHandler
-import json
 from pathlib import Path
 import re
-from ruamel.yaml import YAML
 import socketserver
 import sys
 
@@ -19,8 +17,6 @@ from issues_controller import IssuesController
 from project_controller import ProjectController
 from scan_controller import ScanController
 from token_controller import TokenController
-
-yaml = YAML(typ='safe')
 
 class App(BaseHTTPRequestHandler):
     @classmethod
@@ -56,7 +52,7 @@ class App(BaseHTTPRequestHandler):
           return self.issues_controller.get_all_security_issues(self)
 
         if path == '/docs/raw':
-          return self.__get_docs_raw()
+          return self.app_controller.get_docs_raw(self, self.doc_dir)
 
         if path == '/docs/openapi':
           return self.app_controller.get_openapi_documentation(self, self.doc_dir)
@@ -82,14 +78,6 @@ class App(BaseHTTPRequestHandler):
         return self.scan_controller.init_scan(self)
 
       return self.http.send_not_found_error(self)
-
-    def __get_docs_raw(self):
-      try:
-        with open('./openapi.yaml') as f:
-          self.http.send_result(self, 200, json.dumps(yaml.load(f)))
-      except Exception as err:
-        print('Documentation parse error: ', err)
-        self.http.send_bad_request_error(self, 'Exception while load openapi documentation')
 
 
 def run(server_class=HTTPServer, handler_class=BaseHTTPRequestHandler, host='0.0.0.0', port=8000):
