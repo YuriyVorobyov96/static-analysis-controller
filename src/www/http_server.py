@@ -1,5 +1,7 @@
 import requests
 import json
+from urllib.parse import urlparse, parse_qs
+
 class HTTP():
   def send_request(self, ctx, method, target, payload):
     try:
@@ -48,6 +50,25 @@ class HTTP():
       return self.send_bad_request_error(ctx, 'Invalid JSON')
 
     return { k.lower(): v for k, v in body.items() }
+
+  def get_request_query_params(self, ctx):
+    try:
+      query_params = parse_qs(urlparse(ctx.path).query)
+
+      for (key, value) in query_params.items():
+        query_params[key] = value[0]
+
+      return query_params
+    except:
+      return self.send_bad_request_error(ctx, 'Invalid query params format')
+
+  def get_path_url(self, ctx):
+    try:
+      parsed_path = urlparse(ctx.path)
+
+      return parsed_path.path
+    except:
+      return self.send_bad_request_error(ctx, 'Invalid URL format')
 
   def send_result(self, ctx, code=200, result='OK'):
     self.__do_response(ctx, code, result)

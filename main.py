@@ -22,25 +22,29 @@ class App(BaseHTTPRequestHandler):
       cls.scan_controller = ScanController()
 
     def do_GET(self):
-        if self.path == '/help':
-            return self.__help_message()
+        path = self.http.get_path_url(self)
 
-        if self.path == '/scanner/project/search':
+        if path == '/help':
+          return self.__help_message()
+
+        if path == '/scanner/project/search':
           return self.project_controller.search_project(self)
 
-        if self.path == '/scanner/scan/issues':
+        if path == '/scanner/scan/issues':
           return self.scan_controller.get_issues(self)
 
         return self.http.send_not_found_error(self)
 
     def do_POST(self):
-      if self.path == '/scanner/project/create':
+      path = self.http.get_path_url(self)
+
+      if path == '/scanner/project/create':
         return self.project_controller.create_project(self)
 
-      if self.path == '/scanner/token/create':
+      if path == '/scanner/token/create':
         return self.token_controller.create_analysis_token(self)
 
-      if self.path == '/scanner/scan/init':
+      if path == '/scanner/scan/init':
         return self.scan_controller.init_scan(self)
 
       return self.http.send_not_found_error(self)

@@ -21,7 +21,7 @@ class ProjectController():
     ctx.http.send_request(ctx, 'POST', 'http://localhost:9000/api/projects/create', payload)
 
   def search_project(self, ctx):
-    data = ctx.http.get_request_body(ctx)
+    data = ctx.http.get_request_query_params(ctx)
 
     try:
       if data:

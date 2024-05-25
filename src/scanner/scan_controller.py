@@ -2,7 +2,7 @@ import subprocess
 
 class ScanController():
   def get_issues(self, ctx):
-    data = ctx.http.get_request_body(ctx)
+    data = ctx.http.get_request_query_params(ctx)
 
     try:
       if data:
