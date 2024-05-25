@@ -6,9 +6,10 @@ sys.path.append('./src/www')
 sys.path.append('./src/scanner')
 
 from http_utils import HTTPUtils
+from issues_controller import IssuesController
 from project_controller import ProjectController
-from token_controller import TokenController
 from scan_controller import ScanController
+from token_controller import TokenController
 
 class App(BaseHTTPRequestHandler):
     @classmethod
@@ -17,9 +18,10 @@ class App(BaseHTTPRequestHandler):
 
     @classmethod
     def use_controllers(cls):
+      cls.issues_controller = IssuesController()
       cls.project_controller = ProjectController()
-      cls.token_controller = TokenController()
       cls.scan_controller = ScanController()
+      cls.token_controller = TokenController()
 
     def do_GET(self):
         path = self.http.get_path_url(self)
@@ -30,8 +32,8 @@ class App(BaseHTTPRequestHandler):
         if path == '/scanner/project/search':
           return self.project_controller.search_project(self)
 
-        if path == '/scanner/scan/issues':
-          return self.scan_controller.get_issues(self)
+        if path == '/scanner/issues/search':
+          return self.issues_controller.get_issues(self)
 
         return self.http.send_not_found_error(self)
 
