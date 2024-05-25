@@ -1,5 +1,10 @@
 from dotenv import load_dotenv
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import HTTPServer, BaseHTTPRequestHandler, SimpleHTTPRequestHandler
+import json
+import os
+from pathlib import Path
+import re
+from ruamel.yaml import YAML
 import socketserver
 import sys
 
@@ -14,7 +19,14 @@ from project_controller import ProjectController
 from scan_controller import ScanController
 from token_controller import TokenController
 
+yaml = YAML(typ='safe')
+
 class App(BaseHTTPRequestHandler):
+    @classmethod
+    def use_documentation(cls, doc_dir, doc_driver_dir):
+      cls.doc_dir = Path(__file__).resolve().parent / doc_dir
+      cls.doc_driver_dir = Path(__file__).resolve().parent / doc_driver_dir
+
     @classmethod
     def use_http(cls):
       cls.http = HTTPUtils()
@@ -38,6 +50,41 @@ class App(BaseHTTPRequestHandler):
         if path == '/scanner/issues/search':
           return self.issues_controller.get_issues(self)
 
+        if path == '/docs/raw':
+          return self.__get_docs_raw()
+
+        if path == '/docs/openapi':
+          try:
+              self.path = self.doc_dir / 'index.html'
+              with open(self.path, 'rb') as file:
+                  self.send_response(200)
+                  self.send_header('Content-type', 'text/html')
+                  self.end_headers()
+                  return self.wfile.write(file.read())
+          except FileNotFoundError:
+            return self.http.send_bad_request_error(self, 'Documentation not found')
+
+        if re.match(r"/docs/", path):
+          if self.path[5:] == '/openapi.yaml':
+            with open(os.path.join(self.doc_dir, self.path[6:]), 'rb') as file:
+              self.send_response(200)
+              self.send_header('Content-type', 'text/plain')
+              self.end_headers()
+              return self.wfile.write(file.read())
+          else:
+            with open(os.path.join(self.doc_driver_dir, self.path[6:]), 'rb') as file:
+              self.send_response(200)
+              if self.path.endswith('.html'):
+                self.send_header('Content-type', 'text/html')
+              if self.path.endswith('.css'):
+                self.send_header('Content-type', 'text/css')
+              if self.path.endswith('.css'):
+                self.send_header('Content-type', 'image/png')
+              elif self.path.endswith('.js'):
+                self.send_header('Content-type', 'application/javascript')
+              self.end_headers()
+              return self.wfile.write(file.read())
+
         return self.http.send_not_found_error(self)
 
     def do_POST(self):
@@ -55,30 +102,21 @@ class App(BaseHTTPRequestHandler):
       return self.http.send_not_found_error(self)
 
     def __help_message(self):
-        message = ('Welcome to static analysis controller\n'
-            'To perform action send request with GET\n'
-            '\n'
-            'Body fields:\n'
-            'target - target to sending HTTP request - REQUIRED\n'
-            'method - HTTP request method (GET|POST|PUT|PATCH|DELETE) - REQUIRED\n'
-            'headers - HTTP request headers - OPTIONAL\n'
-            'payload - body for HTTP request - OPTIONAL\n'
-            'param - param for update to random value for HTTP request modification - OPTIONAL\n'
-            '\n'
-            'JSON body format example:\n'
-            '{\n'
-            '    "target": "https://blabla.free.beeceptor.com/my/api/path",\n'
-            '    "method": "POST",\n'
-            '    "headers": {\n'
-            '        "Content-Type": "application/json"\n'
-            '    },\n'
-            '    "payload": {\n'
-            '        "data": "Hello Beeceptor"\n'
-            '    },\n'
-            '    "param": "data"\n'
-            '}\n')
+      message = ('Welcome to Analysis Controller\n'
+        'To perform actions send requests to specified routes\n'
+        '\n'
+        'Documentation available via GET /docs/openapi'
+        '}\n')
 
-        self.send_result(200, message)
+      self.send_result(200, message)
+
+    def __get_docs_raw(self):
+      try:
+        with open('./openapi.yaml') as f:
+          self.http.send_result(self, 200, json.dumps(yaml.load(f)))
+      except Exception as err:
+        print('Documentation parse error: ', err)
+        self.http.send_bad_request_error(self, 'Exception while load openapi documentation')
 
 
 def run(server_class=HTTPServer, handler_class=BaseHTTPRequestHandler, host='0.0.0.0', port=8000):
@@ -88,6 +126,7 @@ def run(server_class=HTTPServer, handler_class=BaseHTTPRequestHandler, host='0.0
 
     handler_class.use_http()
     handler_class.use_controllers()
+    handler_class.use_documentation('documentation', 'documentation/swagger')
 
     httpd = server_class(server_address, handler_class)
 
