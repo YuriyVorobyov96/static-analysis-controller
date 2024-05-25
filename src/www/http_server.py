@@ -48,6 +48,9 @@ class HTTP():
 
       return { k.lower(): v for k, v in body.items() }
 
+  def send_result(self, ctx, code=200, result='OK'):
+    self.__do_response(ctx, code, result)
+
   def __sent_http_request(self, target, method, headers, payload):
       match method.upper():
           case 'GET':
@@ -82,9 +85,6 @@ class HTTP():
   def __send_internal_server_error(self, ctx, err):
       print(err)
       self.__do_response(ctx, 500, json.dumps({ 'err': 'Internal server error' }))
-
-  def send_result(self, ctx, code, result):
-      self.__do_response(ctx, code, result)
 
   def __get_content_type_header(self, ctx):
       return ctx.headers.get('Content-Type')
