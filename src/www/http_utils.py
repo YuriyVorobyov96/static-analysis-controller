@@ -7,7 +7,7 @@ API_KEY = os.environ.get('API_KEY', 'AUTH-TOKEN')
 SONARQUBE_TOKEN = os.environ.get('SONARQUBE_TOKEN', '')
 
 class HTTPUtils():
-  def send_request(self, ctx, method, target, payload):
+  def send_request(self, ctx, method, target, payload, is_internal=False):
     try:
       self.__check_auth(ctx)
       self.__check_json_request_content_type(ctx)
@@ -29,7 +29,11 @@ class HTTPUtils():
 
       response = self.__sent_http_request(target, method, headers, data)
 
+      if is_internal:
+        return response.text
+
       response_info = self.__get_response_info(response)
+
       print(response_info)
 
       return self.send_result(ctx, response.status_code, response.text)
@@ -75,6 +79,8 @@ class HTTPUtils():
 
   def send_result(self, ctx, code=200, result=json.dumps({ 'msg': 'OK' })):
     self.__do_response(ctx, code, result)
+
+    return result
 
   def send_header(self, ctx, header, value):
     return ctx.send_header(header, value)

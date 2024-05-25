@@ -1,3 +1,5 @@
+import json
+
 class IssuesController():
   def get_issues(self, ctx):
     data = ctx.http.get_request_query_params(ctx)
@@ -36,3 +38,37 @@ class IssuesController():
       payload['p'] = data['page']
 
     ctx.http.send_request(ctx, 'GET', 'http://localhost:9000/api/issues/search', payload)
+
+  def get_all_security_issues(self, ctx):
+    data = ctx.http.get_request_query_params(ctx)
+
+    try:
+      if data:
+        if 'name' not in data or not isinstance(data['name'], str):
+            raise Exception('"name" must be a string')
+    except Exception as err:
+      return ctx.http.send_bad_request_error(ctx, err)
+    
+    payload = {
+      'components': data['name'],
+      'issueStatuses': 'OPEN',
+      'impactSoftwareQualities': 'SECURITY',
+      'p': 1,
+      'ps': 500,
+    }
+
+    all_issues = []
+
+    while True:
+      response = ctx.http.send_request(ctx, 'GET', 'http://localhost:9000/api/issues/search', payload, is_internal=True)
+      data = json.loads(response)
+      issues = data.get('issues', [])
+
+      if not issues:
+        break
+
+      all_issues.extend(issues)
+
+      payload['p'] += 1
+
+    return ctx.http.send_result(ctx, 200, json.dumps(all_issues))

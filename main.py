@@ -51,6 +51,9 @@ class App(BaseHTTPRequestHandler):
 
         if path == '/scanner/issues/search':
           return self.issues_controller.get_issues(self)
+        
+        if path == '/scanner/issues/get-all-security-issues':
+          return self.issues_controller.get_all_security_issues(self)
 
         if path == '/docs/raw':
           return self.__get_docs_raw()
