@@ -3,7 +3,7 @@
 ## ENG
 
 Required environment:
-- [python3](https://www.python.org/downloads/)
+- [python 3.12.2 or higher](https://www.python.org/downloads/)
 - [SonarQube](https://www.sonarsource.com/products/sonarqube/)
 - [Docker](https://www.docker.com/)
 - [Docker Compose](https://docs.docker.com/compose/)
@@ -27,7 +27,7 @@ Start with:
 ## RU
 
 Необходимое окружение:
-- [python3](https://www.python.org/downloads/)
+- [python 3.12.2 или выше](https://www.python.org/downloads/)
 - [SonarQube](https://www.sonarsource.com/products/sonarqube/)
 - [Docker](https://www.docker.com/)
 - [Docker Compose](https://docs.docker.com/compose/)
