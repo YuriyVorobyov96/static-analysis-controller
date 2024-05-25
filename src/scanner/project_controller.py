@@ -1,3 +1,7 @@
+import os
+
+SONARQUBE_ADDRESS = os.environ.get('SONARQUBE_ADDRESS', '')
+
 class ProjectController():
   def create_project(self, ctx):
     data = ctx.http.get_request_body(ctx)
@@ -18,7 +22,7 @@ class ProjectController():
     if 'mainBranch' in data:
       payload['mainBranch'] = data['mainBranch']
 
-    ctx.http.send_request(ctx, 'POST', 'http://localhost:9000/api/projects/create', payload)
+    ctx.http.send_request(ctx, 'POST', f'{SONARQUBE_ADDRESS}/api/projects/create', payload)
 
   def search_project(self, ctx):
     data = ctx.http.get_request_query_params(ctx)
@@ -42,4 +46,4 @@ class ProjectController():
     if 'page' in data:
       payload['p'] = data['page']
 
-    ctx.http.send_request(ctx, 'GET', 'http://localhost:9000/api/projects/search', payload)
+    ctx.http.send_request(ctx, 'GET', f'{SONARQUBE_ADDRESS}/api/projects/search', payload)

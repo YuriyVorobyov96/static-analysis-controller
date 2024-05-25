@@ -1,3 +1,7 @@
+import os
+
+SONARQUBE_ADDRESS = os.environ.get('SONARQUBE_ADDRESS', '')
+
 class TokenController():
   def create_analysis_token(self, ctx):
     data = ctx.http.get_request_body(ctx)
@@ -15,4 +19,4 @@ class TokenController():
 
     payload['type'] = 'PROJECT_ANALYSIS_TOKEN'
 
-    ctx.http.send_request(ctx, 'POST', 'http://localhost:9000/api/user_tokens/generate', payload)
+    ctx.http.send_request(ctx, 'POST', f'{SONARQUBE_ADDRESS}/api/user_tokens/generate', payload)

@@ -1,4 +1,7 @@
 import json
+import os
+
+SONARQUBE_ADDRESS = os.environ.get('SONARQUBE_ADDRESS', '')
 
 class IssuesController():
   def get_issues(self, ctx):
@@ -37,7 +40,7 @@ class IssuesController():
     if 'page' in data:
       payload['p'] = data['page']
 
-    ctx.http.send_request(ctx, 'GET', 'http://localhost:9000/api/issues/search', payload)
+    ctx.http.send_request(ctx, 'GET', f'{SONARQUBE_ADDRESS}/api/issues/search', payload)
 
   def get_all_security_issues(self, ctx):
     data = ctx.http.get_request_query_params(ctx)
@@ -60,7 +63,7 @@ class IssuesController():
     all_issues = []
 
     while True:
-      response = ctx.http.send_request(ctx, 'GET', 'http://localhost:9000/api/issues/search', payload, is_internal=True)
+      response = ctx.http.send_request(ctx, 'GET', f'{SONARQUBE_ADDRESS}/api/issues/search', payload, is_internal=True)
       data = json.loads(response)
       issues = data.get('issues', [])
 

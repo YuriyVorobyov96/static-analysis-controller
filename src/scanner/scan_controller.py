@@ -1,4 +1,7 @@
+import os
 import subprocess
+
+SONARQUBE_ADDRESS = os.environ.get('SONARQUBE_ADDRESS', '')
 
 class ScanController():
   def init_scan(self, ctx):
