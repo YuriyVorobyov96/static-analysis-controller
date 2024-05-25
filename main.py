@@ -16,14 +16,14 @@ class App(BaseHTTPRequestHandler):
 
     @classmethod
     def use_controllers(cls):
-      cls.project_controller = ProjectController(cls.http)
+      cls.project_controller = ProjectController()
 
     def do_GET(self):
         if self.path == '/help':
             return self.__help_message()
 
         if self.path == '/scanner/project/search':
-            return self.search_project()
+          return self.project_controller.search_project(self)
 
         if self.path == '/scanner/scan/issues':
             return self.get_issues()
@@ -32,7 +32,7 @@ class App(BaseHTTPRequestHandler):
 
     def do_POST(self):
       if self.path == '/scanner/project/create':
-          return self.create_project()
+        return self.project_controller.create_project(self)
 
       if self.path == '/scanner/token/create':
           return self.create_analysis_token()
@@ -41,27 +41,6 @@ class App(BaseHTTPRequestHandler):
         return self.init_scan()
 
       return self.http.send_not_found_error(self)
-
-    def create_project(self):
-      data = self.http.get_request_body(self)
-
-      try:
-        if data:
-          if not 'key' in data or not isinstance(data['key'], str):
-              raise Exception('"key" must be a string')
-          if not 'name' in data or not isinstance(data['name'], str):
-            raise Exception('"name" must be a string')
-          if 'mainBranch' in data and not isinstance(data['mainBranch'], str):
-            raise Exception('"mainBranch" must be a string')
-      except Exception as err:
-        return self.http.send_bad_request_error(self, err)
-          
-      payload = { 'project': data['key'], 'name': data['name'] }
-
-      if 'mainBranch' in data:
-          payload['mainBranch'] = data['mainBranch']
-
-      self.http.send_request(self, 'POST', 'http://localhost:9000/api/projects/create', payload)
 
     def init_scan(self):
       data = self.get_request_body()
@@ -134,23 +113,6 @@ class App(BaseHTTPRequestHandler):
       payload['type'] = 'PROJECT_ANALYSIS_TOKEN'
 
       self.send_request('POST', 'http://localhost:9000/api/user_tokens/generate', payload)
-
-    def search_project(self):
-      data = self.get_request_body()
-
-      try:
-        if data:
-          if 'query' in data and not isinstance(data['query'], str):
-            raise Exception('"query" must be a string')
-      except Exception as err:
-        return self.send_bad_request_error(err)
-
-      payload = dict()
-
-      if 'query' in data:
-          payload['q'] = data['query']
-
-      self.send_request('GET', 'http://localhost:9000/api/projects/search', payload)
 
     def __help_message(self):
         message = ('Welcome to static analysis controller\n'
