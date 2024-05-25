@@ -3,10 +3,11 @@
 ## ENG
 
 Required environment:
-- python3
-- SonarQube
-- Docker
-- Docker Compose
+- [python3](https://www.python.org/downloads/)
+- [SonarQube](https://www.sonarsource.com/products/sonarqube/)
+- [Docker](https://www.docker.com/)
+- [Docker Compose](https://docs.docker.com/compose/)
+- [Ngrok](https://ngrok.com/) (optional: for emulate different hosts)
 
 Requirements install:
 - pip3 install -r requirements.txt
@@ -26,10 +27,11 @@ Start with:
 ## RU
 
 Необходимое окружение:
-- python3
-- SonarQube
-- Docker
-- Docker Compose
+- [python3](https://www.python.org/downloads/)
+- [SonarQube](https://www.sonarsource.com/products/sonarqube/)
+- [Docker](https://www.docker.com/)
+- [Docker Compose](https://docs.docker.com/compose/)
+- [Ngrok](https://ngrok.com/) (опционально: для эмуляции различных хостов)
 
 Установка зависимостей:
 - pip3 install -r requirements.txt
