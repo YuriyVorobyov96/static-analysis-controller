@@ -98,24 +98,6 @@ class App(BaseHTTPRequestHandler):
 
       self.send_request('GET', 'http://localhost:9000/api/issues/search', payload)
 
-    def create_analysis_token(self):
-      data = self.get_request_body()
-
-      try:
-        if data:
-          if not 'key' in data or not isinstance(data['key'], str):
-              raise Exception('"key" must be a string')
-          if not 'name' in data or not isinstance(data['name'], str):
-            raise Exception('"name" must be a string')
-      except Exception as err:
-        return self.send_bad_request_error(err)
-          
-      payload = { 'projectKey': data['key'], 'name': data['name'] }
-
-      payload['type'] = 'PROJECT_ANALYSIS_TOKEN'
-
-      self.send_request('POST', 'http://localhost:9000/api/user_tokens/generate', payload)
-
     def __help_message(self):
         message = ('Welcome to static analysis controller\n'
             'To perform action send request with GET\n'
