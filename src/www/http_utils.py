@@ -76,6 +76,18 @@ class HTTPUtils():
   def send_result(self, ctx, code=200, result=json.dumps({ 'msg': 'OK' })):
     self.__do_response(ctx, code, result)
 
+  def send_header(self, ctx, header, value):
+    return ctx.send_header(header, value)
+
+  def end_headers(self, ctx):
+    return ctx.end_headers()
+
+  def serve_file(self, ctx, file):
+    return ctx.wfile.write(file.read())
+
+  def send_response(self, ctx, status_code=200):
+    return ctx.send_response(status_code)
+
   def __sent_http_request(self, target, method, headers, payload):
     match method.upper():
       case 'GET':
@@ -99,9 +111,9 @@ class HTTPUtils():
 
     try:
       json.loads(content)
-      ctx.send_header('Content-type', 'application/json')
+      self.send_header(ctx, 'Content-type', 'application/json')
     except:
-      ctx.send_header('Content-type', 'text/plain')
+      self.send_header(ctx, 'Content-type', 'text/plain')
 
     ctx.end_headers()
     response = bytes(f'{content}', 'utf8')
