@@ -6,6 +6,7 @@ Required environment:
 - python3
 - SonarQube
 - Docker
+- Docker Compose
 
 Requirements install:
 - pip3 install -r requirements.txt
@@ -14,8 +15,7 @@ Run server via command line:
 - python3 main.py
 
 Run server via Docker:
-- docker build -t static-analysis .
-- docker run -p 8000:8000 static-analysis
+- docker-compose up -d --build
 
 Start with:
 - GET /help - info about
@@ -29,6 +29,7 @@ Start with:
 - python3
 - SonarQube
 - Docker
+- Docker Compose
 
 Установка зависимостей:
 - pip3 install -r requirements.txt
@@ -37,8 +38,7 @@ Start with:
 - python3 main.py
 
 Запуск сервера с помощью Docker:
-- docker build -t static-analysis .
-- docker run -p 8000:8000 static-analysis
+- docker-compose up -d --build
 
 Начните с запросов:
 - GET /help - общая информация
