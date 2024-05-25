@@ -55,7 +55,7 @@ paths:
           required: false
           schema:
             type: string
-            example: 'project-1'
+            example: project-1
         - name: page
           in: query
           description: Number of page in result
@@ -150,14 +150,14 @@ paths:
           required: false
           schema:
             type: string
-            example: 'project-1'
+            example: project-1
         - name: status
           in: query
           description: Status of issues
           required: false
           schema:
             type: string
-            example: 'OPEN'
+            example: OPEN
             enum:
               - OPEN
               - CONFIRMED
@@ -170,7 +170,7 @@ paths:
           required: false
           schema:
             type: string
-            example: 'SECURITY'
+            example: SECURITY
             enum:
               - MAINTAINABILITY
               - RELIABILITY
@@ -188,7 +188,66 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SearchProjectsResponse'
+                $ref: '#/components/schemas/SearchIssuesResponse'
+        '400':
+          description: Server exceptions
+        '404':
+          description: Invalid path
+        '500':
+          description: Internal server error
+      security:
+        - Authorization: []
+  /scanner/issues/get-all-security-issues:
+    get:
+      tags:
+        - scanner
+      summary: Get all security issues
+      description: Get all security issues
+      operationId: get_security_issues
+      parameters:
+        - name: name
+          in: query
+          description: Name of project
+          required: false
+          schema:
+            type: string
+            example: project-1
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityIssuesResponse'
+        '400':
+          description: Server exceptions
+        '404':
+          description: Invalid path
+        '500':
+          description: Internal server error
+      security:
+        - Authorization: []
+  /scanner/scan/analysis:
+    post:
+      tags:
+        - scanner
+      summary: Full analysis for CI/CD processes
+      description: Full analysis for CI/CD processes
+      operationId: full_analysis
+      requestBody:
+        description: Full analysis for CI/CD processes
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FullAnalysisRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityIssuesResponse'
         '400':
           description: Server exceptions
         '404':
@@ -204,46 +263,46 @@ components:
       properties:
         key:
           type: string
-          example: 'key'
+          example: key
           description: Project key
         name:
           type: string
-          example: 'name'
+          example: name
           description: Project name
         qualifier:
           type: string
-          example: 'TRK'
+          example: TRK
           description: Project qualifier
         visibility:
           type: string
-          example: 'public'
+          example: public
           description: Project visibility
     Token:
       type: object
       properties:
         login:
           type: string
-          example: 'admin'
+          example: admin
           description: Current user
         name:
           type: string
-          example: 'name'
+          example: name
           description: Token name
         token:
           type: string
-          example: 'sqp_a4a4d31de2294e3955af34a0184e6bc4407194f6'
+          example: sqp_a4a4d31de2294e3955af34a0184e6bc4407194f6
           description: Token
         createdAt:
           type: string
-          example: '2024-05-19T15:47:24+0000'
+          example: 2024-05-19T15:47:24+0000
           description: Time of creation
         type:
           type: string
-          example: 'PROJECT_ANALYSIS_TOKEN'
+          example: PROJECT_ANALYSIS_TOKEN
           description: Token type
         projectKey:
           type: string
-          example: 'key'
+          example: key
           description: Project key
     Pagination:
       type: object
@@ -265,23 +324,23 @@ components:
       properties:
         key:
           type: string
-          example: '475909f5-4f3c-462d-94cc-bb4d1d10d426'
+          example: 475909f5-4f3c-462d-94cc-bb4d1d10d426
           description: Issue key
         rule:
           type: string
-          example: 'secrets:S6702'
+          example: secrets:S6702
           description: Rule
         severity:
           type: string
-          example: 'BLOCKER'
+          example: BLOCKER
           description: Severity
         component:
           type: string
-          example: 'project-1:main.py'
+          example: project-1:main.py
           description: Component name
         project:
           type: string
-          example: 'project-1'
+          example: project-1
           description: Project key
         line:
           type: integer
@@ -289,7 +348,7 @@ components:
           description: Number of line in code
         hash:
           type: string
-          example: 'ad8266c2b8fcc5586b38f30799b756ec'
+          example: ad8266c2b8fcc5586b38f30799b756ec
           description: Hash of issue
         textRange:
           type: object
@@ -312,19 +371,21 @@ components:
               description: End symbol in code
         status:
           type: string
-          example: 'OPEN'
+          example: OPEN
           description: Issue status
         message:
           type: string
-          example: 'Make sure this SonarQube token gets revoked, changed, and removed from the code'
+          example: >-
+            Make sure this SonarQube token gets revoked, changed, and removed
+            from the code
           description: Issue commentary
         type:
           type: string
-          example: 'VULNERABILITY'
+          example: VULNERABILITY
           description: Issue type
         scope:
           type: string
-          example: 'MAIN'
+          example: MAIN
           description: Issue scope
         quickFixAvailable:
           type: boolean
@@ -332,11 +393,11 @@ components:
           description: Quick fix flag
         cleanCodeAttribute:
           type: string
-          example: 'TRUSTWORTHY'
+          example: TRUSTWORTHY
           description: Clean code attribute
         cleanCodeAttributeCategory:
           type: string
-          example: 'RESPONSIBLE'
+          example: RESPONSIBLE
           description: Clean code attribute category
         impacts:
           type: array
@@ -345,11 +406,11 @@ components:
             properties:
               softwareQuality:
                 type: string
-                example: 'SECURITY'
+                example: SECURITY
                 description: Impact type
               severity:
                 type: string
-                example: 'HIGH'
+                example: HIGH
                 description: Impact severity
     CreateProjectRequest:
       required:
@@ -359,15 +420,15 @@ components:
       properties:
         key:
           type: string
-          example: 'key'
+          example: key
           description: Project key
         name:
           type: string
-          example: 'name'
+          example: name
           description: Project name
         mainBranch:
           type: string
-          example: 'main'
+          example: main
           description: Name of the main branch of the project
     CreateProjectResponse:
       type: object
@@ -391,11 +452,11 @@ components:
       properties:
         key:
           type: string
-          example: 'key'
+          example: key
           description: Project key
         name:
           type: string
-          example: 'name'
+          example: name
           description: Token name
     CreateTokenResponse:
       type: object
@@ -410,18 +471,18 @@ components:
       properties:
         source:
           type: string
-          example: '.'
+          example: /tmp/project-to-analyze
           description: Path to dir with code
         token:
           type: string
-          example: 'sqp_a4a4d31de2294e3955af34a0184e6bc4407194f6'
+          example: sqp_a4a4d31de2294e3955af34a0184e6bc4407194f6
           description: Token
     InitScanResponse:
       type: object
       properties:
         msg:
           type: string
-          example: 'OK'
+          example: OK
     SearchIssuesResponse:
       type: object
       properties:
@@ -430,7 +491,34 @@ components:
         issues:
           type: array
           items:
-            $ref: '#/components/schemas/Project'
+            $ref: '#/components/schemas/Issue'
+    SecurityIssuesResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/Issue'
+    FullAnalysisRequest:
+      required:
+        - key
+        - name
+        - source
+      type: object
+      properties:
+        key:
+          type: string
+          example: key
+          description: Project key
+        name:
+          type: string
+          example: name
+          description: Project name
+        mainBranch:
+          type: string
+          example: main
+          description: Name of the main branch of the project
+        source:
+          type: string
+          example: /tmp/project-to-analyze
+          description: Path to dir with code
   securitySchemes:
     Authorization:
       type: apiKey
