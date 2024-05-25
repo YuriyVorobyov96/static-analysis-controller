@@ -1,5 +1,4 @@
 import sys
-import subprocess
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import socketserver
 
