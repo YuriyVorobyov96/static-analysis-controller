@@ -1,7 +1,6 @@
 from dotenv import load_dotenv
 from http.server import HTTPServer, BaseHTTPRequestHandler, SimpleHTTPRequestHandler
 import json
-import os
 from pathlib import Path
 import re
 from ruamel.yaml import YAML
@@ -10,10 +9,12 @@ import sys
 
 load_dotenv()
 
-sys.path.append('./src/www')
+sys.path.append('./src/app')
 sys.path.append('./src/scanner')
+sys.path.append('./src/www')
 
 from http_utils import HTTPUtils
+from app_controller import AppController
 from issues_controller import IssuesController
 from project_controller import ProjectController
 from scan_controller import ScanController
@@ -32,7 +33,8 @@ class App(BaseHTTPRequestHandler):
       cls.http = HTTPUtils()
 
     @classmethod
-    def use_controllers(cls, issues_controller, project_controller, scan_controller, token_controller):
+    def use_controllers(cls, app_controller, issues_controller, project_controller, scan_controller, token_controller):
+      cls.app_controller = app_controller()
       cls.issues_controller = issues_controller()
       cls.project_controller = project_controller()
       cls.scan_controller = scan_controller()
@@ -42,7 +44,7 @@ class App(BaseHTTPRequestHandler):
         path = self.http.get_path_url(self)
 
         if path == '/help':
-          return self.__help_message()
+          return self.app_controller.help_message(self)
 
         if path == '/scanner/project/search':
           return self.project_controller.search_project(self)
@@ -54,36 +56,13 @@ class App(BaseHTTPRequestHandler):
           return self.__get_docs_raw()
 
         if path == '/docs/openapi':
-          try:
-              self.path = self.doc_dir / 'index.html'
-              with open(self.path, 'rb') as file:
-                self.http.send_response(self, 200)
-                self.http.send_header(self, 'Content-type', 'text/html')
-                self.http.end_headers(self)
-                return self.http.serve_file(self, file)
-          except FileNotFoundError:
-            return self.http.send_bad_request_error(self, 'Documentation not found')
+          return self.app_controller.get_openapi_documentation(self, self.doc_dir)
 
         if re.match(r"/docs/", path):
           if self.path[5:] == '/openapi.yaml':
-            with open(os.path.join(self.doc_dir, self.path[6:]), 'rb') as file:
-              self.http.send_response(self, 200)
-              self.http.send_header(self, 'Content-type', 'text/plain')
-              self.http.end_headers(self)
-              return self.http.serve_file(self, file)
+            return self.app_controller.get_openapi_file(self, self.doc_dir, file_name=self.path[6:])
           else:
-            with open(os.path.join(self.doc_driver_dir, self.path[6:]), 'rb') as file:
-              self.http.send_response(self, 200)
-              if self.path.endswith('.html'):
-                self.http.send_header(self, 'Content-type', 'text/html')
-              if self.path.endswith('.css'):
-                self.http.send_header(self, 'Content-type', 'text/css')
-              if self.path.endswith('.css'):
-                self.http.send_header(self, 'Content-type', 'text/png')
-              elif self.path.endswith('.js'):
-                self.http.send_header(self, 'Content-type', 'application/javascript')
-              self.http.end_headers(self)
-              return self.http.serve_file(self, file)
+            return self.app_controller.serve_static(self, self.doc_driver_dir, file_name=self.path[6:])
 
         return self.http.send_not_found_error(self)
 
@@ -101,15 +80,6 @@ class App(BaseHTTPRequestHandler):
 
       return self.http.send_not_found_error(self)
 
-    def __help_message(self):
-      message = ('Welcome to Analysis Controller\n'
-        'To perform actions send requests to specified routes\n'
-        '\n'
-        'Documentation available via GET /docs/openapi'
-        '}\n')
-
-      self.send_result(200, message)
-
     def __get_docs_raw(self):
       try:
         with open('./openapi.yaml') as f:
@@ -126,6 +96,7 @@ def run(server_class=HTTPServer, handler_class=BaseHTTPRequestHandler, host='0.0
 
     handler_class.use_http()
     handler_class.use_controllers(
+      app_controller = AppController,
       issues_controller = IssuesController,
       project_controller = ProjectController,
       scan_controller = ScanController,

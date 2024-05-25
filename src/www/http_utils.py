@@ -36,8 +36,8 @@ class HTTPUtils():
     except Exception as err:
       return self.__send_internal_server_error(ctx, err)
 
-  def send_not_found_error(self, ctx):
-    self.__do_response(ctx, 404, json.dumps({ 'err': 'Invalid path' }))
+  def send_not_found_error(self, ctx, err='Invalid path'):
+    self.__do_response(ctx, 404, json.dumps({ 'err': err }))
 
   def send_bad_request_error(self, ctx, err):
     error = { 'err': str(err) }
