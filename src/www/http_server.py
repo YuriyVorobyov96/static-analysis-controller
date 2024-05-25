@@ -3,6 +3,7 @@ import json
 class HTTP():
   def send_request(self, ctx, method, target, payload):
     try:
+      self.__check_auth(ctx)
       self.__check_json_request_content_type(ctx)
     except Exception as err:
       return self.send_bad_request_error(ctx, err)
@@ -91,6 +92,11 @@ class HTTP():
 
   def __is_json_content_type(self, content_type):
     return content_type == 'application/json'
+
+  def __check_auth(self, ctx):
+    # TODO: test token, remove for production
+    if (ctx.headers.get('Authorization') != 'AUTH-TOKEN'):
+      raise Exception('Invalid authorization token')
   
   def __check_json_request_content_type(self, ctx):
     content_type = self.__get_content_type_header(ctx)
