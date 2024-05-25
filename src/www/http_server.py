@@ -1,18 +1,14 @@
 import requests
 import json
-from http.server import HTTPServer, BaseHTTPRequestHandler
-
-class HTTP(BaseHTTPRequestHandler):
-  def __init__(self, *args, **kwargs):
-    BaseHTTPRequestHandler.__init__(self, *args, **kwargs)
-
-  def send_request(self, method, target, payload):
+class HTTP():
+  def send_request(self, ctx, method, target, payload):
       try:
-          self.__check_json_request_content_type()
+          self.__check_json_request_content_type(ctx)
       except Exception as err:
-          return self.send_bad_request_error(err)
+          return self.send_bad_request_error(ctx, err)
 
       try:
+          # TODO: test token, remove for production
           headers = { "Authorization": "Bearer squ_1bb3dc40d54c5d1df2b5255aa530bdc2820bfb1b" }
 
           data = '?'
@@ -30,28 +26,20 @@ class HTTP(BaseHTTPRequestHandler):
           response_info = self.__get_response_info(response)
           print(response_info)
 
-          return self.send_result(response.status_code, response.text)
+          return self.send_result(ctx, response.status_code, response.text)
       except Exception as err:
-          return self.__send_internal_server_error(err)
+          return self.__send_internal_server_error(ctx, err)
 
-  def get_request_body(self):
-    content_len = int(self.headers.get('Content-Length'))
-    post_body = self.rfile.read(content_len)
+  def send_not_found_error(self, ctx):
+      self.__do_response(ctx, 404, json.dumps({ 'err': 'Invalid path' }))
 
-    body = json.loads(post_body)
-
-    return { k.lower(): v for k, v in body.items() }
-
-  def send_not_found_error(self):
-      self.__do_response(404, json.dumps({ 'err': 'Invalid path' }))
-
-  def send_bad_request_error(self, err):
+  def send_bad_request_error(self, ctx, err):
       error = { 'err': str(err) }
-      self.__do_response(400, json.dumps(error))
+      self.__do_response(ctx, 400, json.dumps(error))
 
-  def get_request_body(self):
-      content_len = int(self.headers.get('Content-Length'))
-      post_body = self.rfile.read(content_len)
+  def get_request_body(self, ctx):
+      content_len = int(ctx.headers.get('Content-Length'))
+      post_body = ctx.rfile.read(content_len)
 
       body = json.loads(post_body)
 
@@ -75,34 +63,34 @@ class HTTP(BaseHTTPRequestHandler):
           f'[#] Response headers: {json.dumps(dict(response.headers), indent=4, sort_keys=True)}\n'
           f'[#] Response content:\n{response.text}')
 
-  def __do_response(self, status_code=200, content=''):
-      self.send_response(status_code)
+  def __do_response(self, ctx, status_code=200, content=''):
+      ctx.send_response(status_code)
 
       try:
         json.loads(content)
-        self.send_header('Content-type', 'application/json')
+        ctx.send_header('Content-type', 'application/json')
       except:
-        self.send_header('Content-type', 'text/plain')
+        ctx.send_header('Content-type', 'text/plain')
 
-      self.end_headers()
+      ctx.end_headers()
       response = bytes(f'{content}', 'utf8')
-      self.wfile.write(response)
+      ctx.wfile.write(response)
 
-  def __send_internal_server_error(self, err):
+  def __send_internal_server_error(self, ctx, err):
       print(err)
-      self.__do_response(500, json.dumps({ 'err': 'Internal server error' }))
+      self.__do_response(ctx, 500, json.dumps({ 'err': 'Internal server error' }))
 
-  def send_result(self, code, result):
-      self.__do_response(code, result)
+  def send_result(self, ctx, code, result):
+      self.__do_response(ctx, code, result)
 
-  def __get_content_type_header(self):
-      return self.headers.get('Content-Type')
+  def __get_content_type_header(self, ctx):
+      return ctx.headers.get('Content-Type')
 
   def __is_json_content_type(self, content_type):
       return content_type == 'application/json'
   
-  def __check_json_request_content_type(self):
-      content_type = self.__get_content_type_header()
+  def __check_json_request_content_type(self, ctx):
+      content_type = self.__get_content_type_header(ctx)
 
       if not self.__is_json_content_type(content_type):
           raise Exception('Invalid Header Type: Send JSON\nFor more info send GET request to "/help" path')
