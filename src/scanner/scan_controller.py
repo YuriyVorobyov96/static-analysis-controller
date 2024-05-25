@@ -8,11 +8,10 @@ class ScanController():
     data = ctx.http.get_request_body(ctx)
 
     try:
-      if data:
-        if not 'source' in data or not isinstance(data['source'], str):
-          raise Exception('"source" must be a string')
-        if not 'token' in data or not isinstance(data['token'], str):
-          raise Exception('"token" must be a string')
+      if not 'source' in data or not isinstance(data['source'], str):
+        raise Exception('"source" must be a string')
+      if not 'token' in data or not isinstance(data['token'], str):
+        raise Exception('"token" must be a string')
     except Exception as err:
       return ctx.http.send_bad_request_error(ctx, err)
 

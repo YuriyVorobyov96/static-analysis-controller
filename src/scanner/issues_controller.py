@@ -46,12 +46,11 @@ class IssuesController():
     data = ctx.http.get_request_query_params(ctx)
 
     try:
-      if data:
-        if 'name' not in data or not isinstance(data['name'], str):
-            raise Exception('"name" must be a string')
+      if not 'name' in data or not isinstance(data['name'], str):
+        raise Exception('"name" must be a string')
     except Exception as err:
       return ctx.http.send_bad_request_error(ctx, err)
-    
+
     payload = {
       'components': data['name'],
       'issueStatuses': 'OPEN',

@@ -7,13 +7,12 @@ class ProjectController():
     data = ctx.http.get_request_body(ctx)
 
     try:
-      if data:
-        if not 'key' in data or not isinstance(data['key'], str):
-          raise Exception('"key" must be a string')
-        if not 'name' in data or not isinstance(data['name'], str):
-          raise Exception('"name" must be a string')
-        if 'mainBranch' in data and not isinstance(data['mainBranch'], str):
-          raise Exception('"mainBranch" must be a string')
+      if not 'key' in data or not isinstance(data['key'], str):
+        raise Exception('"key" must be a string')
+      if not 'name' in data or not isinstance(data['name'], str):
+        raise Exception('"name" must be a string')
+      if 'mainBranch' in data and not isinstance(data['mainBranch'], str):
+        raise Exception('"mainBranch" must be a string')
     except Exception as err:
       return ctx.http.send_bad_request_error(ctx, err)
 
