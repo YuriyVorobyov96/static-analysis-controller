@@ -70,7 +70,7 @@ class ScanController():
       return ctx.http.send_bad_request_error(ctx, 'Token creation error')
 
     try:
-      cmd = f"sonar-scanner \
+      cmd = f"sonar-scanner -X \
                     -Dsonar.projectKey={data['key']} \
                     -Dsonar.sources={data['source']} \
                     -Dsonar.host.url={SONARQUBE_ADDRESS} \
