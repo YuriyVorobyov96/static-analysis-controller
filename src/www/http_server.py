@@ -41,7 +41,10 @@ class HTTP():
       content_len = int(ctx.headers.get('Content-Length'))
       post_body = ctx.rfile.read(content_len)
 
-      body = json.loads(post_body)
+      try:
+        body = json.loads(post_body)
+      except:
+        return self.send_bad_request_error(ctx, 'Invalid JSON')
 
       return { k.lower(): v for k, v in body.items() }
 
