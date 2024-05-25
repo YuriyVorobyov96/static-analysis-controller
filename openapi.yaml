@@ -1,0 +1,438 @@
+openapi: 3.0.3
+info:
+  title: Analysis Controller
+  description: |-
+    Useful links:
+    - [SonarQube](https://www.sonarsource.com/products/sonarqube/)
+    - [SonarQube WebAPI](https://next.sonarqube.com/sonarqube/web_api)
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000
+tags:
+  - name: scanner
+    description: Static analysis operations
+paths:
+  /scanner/project/create:
+    post:
+      tags:
+        - scanner
+      summary: Create project for static analysis
+      description: Create project for static analysis
+      operationId: create_project
+      requestBody:
+        description: Create project for static analysis
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProjectRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateProjectResponse'
+        '400':
+          description: Server exceptions
+        '404':
+          description: Invalid path
+        '500':
+          description: Internal server error
+      security:
+        - Authorization: []
+  /scanner/project/search:
+    get:
+      tags:
+        - scanner
+      summary: Search static analysis projects
+      description: Search static analysis projects
+      operationId: search_projects
+      parameters:
+        - name: query
+          in: query
+          description: Query for search
+          required: false
+          schema:
+            type: string
+            example: 'project-1'
+        - name: page
+          in: query
+          description: Number of page in result
+          required: false
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchProjectsResponse'
+        '400':
+          description: Server exceptions
+        '404':
+          description: Invalid path
+        '500':
+          description: Internal server error
+      security:
+        - Authorization: []
+  /scanner/token/create:
+    post:
+      tags:
+        - scanner
+      summary: Create token for project
+      description: Create token for project
+      operationId: create_token
+      requestBody:
+        description: Create token for project
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTokenRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateTokenResponse'
+        '400':
+          description: Server exceptions
+        '404':
+          description: Invalid path
+        '500':
+          description: Internal server error
+      security:
+        - Authorization: []
+  /scanner/scan/init:
+    post:
+      tags:
+        - scanner
+      summary: Init scan operation
+      description: Init scan
+      operationId: init_scan
+      requestBody:
+        description: Init scan operation
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InitScanRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitScanResponse'
+        '400':
+          description: Server exceptions
+        '404':
+          description: Invalid path
+        '500':
+          description: Internal server error
+      security:
+        - Authorization: []
+  /scanner/issues/search:
+    get:
+      tags:
+        - scanner
+      summary: Search issues
+      description: Search issues
+      operationId: search_issues
+      parameters:
+        - name: name
+          in: query
+          description: Name of project
+          required: false
+          schema:
+            type: string
+            example: 'project-1'
+        - name: status
+          in: query
+          description: Status of issues
+          required: false
+          schema:
+            type: string
+            example: 'OPEN'
+            enum:
+              - OPEN
+              - CONFIRMED
+              - FALSE_POSITIVE
+              - ACCEPTED
+              - FIXED
+        - name: type
+          in: query
+          description: Type of issues
+          required: false
+          schema:
+            type: string
+            example: 'SECURITY'
+            enum:
+              - MAINTAINABILITY
+              - RELIABILITY
+              - SECURITY
+        - name: page
+          in: query
+          description: Number of page in result
+          required: false
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchProjectsResponse'
+        '400':
+          description: Server exceptions
+        '404':
+          description: Invalid path
+        '500':
+          description: Internal server error
+      security:
+        - Authorization: []
+components:
+  schemas:
+    Project:
+      type: object
+      properties:
+        key:
+          type: string
+          example: 'key'
+          description: Project key
+        name:
+          type: string
+          example: 'name'
+          description: Project name
+        qualifier:
+          type: string
+          example: 'TRK'
+          description: Project qualifier
+        visibility:
+          type: string
+          example: 'public'
+          description: Project visibility
+    Token:
+      type: object
+      properties:
+        login:
+          type: string
+          example: 'admin'
+          description: Current user
+        name:
+          type: string
+          example: 'name'
+          description: Token name
+        token:
+          type: string
+          example: 'sqp_a4a4d31de2294e3955af34a0184e6bc4407194f6'
+          description: Token
+        createdAt:
+          type: string
+          example: '2024-05-19T15:47:24+0000'
+          description: Time of creation
+        type:
+          type: string
+          example: 'PROJECT_ANALYSIS_TOKEN'
+          description: Token type
+        projectKey:
+          type: string
+          example: 'key'
+          description: Project key
+    Pagination:
+      type: object
+      properties:
+        pageIndex:
+          type: integer
+          example: 1
+          description: Current page number
+        pageSize:
+          type: integer
+          example: 100
+          description: Page size
+        total:
+          type: integer
+          example: 1
+          description: Number of items on the current page
+    Issue:
+      type: object
+      properties:
+        key:
+          type: string
+          example: '475909f5-4f3c-462d-94cc-bb4d1d10d426'
+          description: Issue key
+        rule:
+          type: string
+          example: 'secrets:S6702'
+          description: Rule
+        severity:
+          type: string
+          example: 'BLOCKER'
+          description: Severity
+        component:
+          type: string
+          example: 'project-1:main.py'
+          description: Component name
+        project:
+          type: string
+          example: 'project-1'
+          description: Project key
+        line:
+          type: integer
+          example: 144
+          description: Number of line in code
+        hash:
+          type: string
+          example: 'ad8266c2b8fcc5586b38f30799b756ec'
+          description: Hash of issue
+        textRange:
+          type: object
+          properties:
+            startLine:
+              type: integer
+              example: 144
+              description: Start line in code
+            endLine:
+              type: integer
+              example: 144
+              description: End line in code
+            startOffset:
+              type: integer
+              example: 20
+              description: Start symbol in code
+            endOffset:
+              type: integer
+              example: 64
+              description: End symbol in code
+        status:
+          type: string
+          example: 'OPEN'
+          description: Issue status
+        message:
+          type: string
+          example: 'Make sure this SonarQube token gets revoked, changed, and removed from the code'
+          description: Issue commentary
+        type:
+          type: string
+          example: 'VULNERABILITY'
+          description: Issue type
+        scope:
+          type: string
+          example: 'MAIN'
+          description: Issue scope
+        quickFixAvailable:
+          type: boolean
+          example: false
+          description: Quick fix flag
+        cleanCodeAttribute:
+          type: string
+          example: 'TRUSTWORTHY'
+          description: Clean code attribute
+        cleanCodeAttributeCategory:
+          type: string
+          example: 'RESPONSIBLE'
+          description: Clean code attribute category
+        impacts:
+          type: array
+          items:
+            type: object
+            properties:
+              softwareQuality:
+                type: string
+                example: 'SECURITY'
+                description: Impact type
+              severity:
+                type: string
+                example: 'HIGH'
+                description: Impact severity
+    CreateProjectRequest:
+      required:
+        - key
+        - name
+      type: object
+      properties:
+        key:
+          type: string
+          example: 'key'
+          description: Project key
+        name:
+          type: string
+          example: 'name'
+          description: Project name
+        mainBranch:
+          type: string
+          example: 'main'
+          description: Name of the main branch of the project
+    CreateProjectResponse:
+      type: object
+      properties:
+        project:
+          $ref: '#/components/schemas/Project'
+    SearchProjectsResponse:
+      type: object
+      properties:
+        paging:
+          $ref: '#/components/schemas/Pagination'
+        components:
+          type: array
+          items:
+            $ref: '#/components/schemas/Project'
+    CreateTokenRequest:
+      required:
+        - key
+        - name
+      type: object
+      properties:
+        key:
+          type: string
+          example: 'key'
+          description: Project key
+        name:
+          type: string
+          example: 'name'
+          description: Token name
+    CreateTokenResponse:
+      type: object
+      properties:
+        project:
+          $ref: '#/components/schemas/Token'
+    InitScanRequest:
+      required:
+        - source
+        - token
+      type: object
+      properties:
+        source:
+          type: string
+          example: '.'
+          description: Path to dir with code
+        token:
+          type: string
+          example: 'sqp_a4a4d31de2294e3955af34a0184e6bc4407194f6'
+          description: Token
+    InitScanResponse:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: 'OK'
+    SearchIssuesResponse:
+      type: object
+      properties:
+        paging:
+          $ref: '#/components/schemas/Pagination'
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/Project'
+  securitySchemes:
+    Authorization:
+      type: apiKey
+      name: Authorization
+      in: header
