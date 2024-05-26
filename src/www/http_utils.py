@@ -56,7 +56,7 @@ class HTTPUtils():
     except:
       return self.send_bad_request_error(ctx, 'Invalid JSON')
 
-    return { k.lower(): v for k, v in body.items() }
+    return { k: v for k, v in body.items() }
 
   def get_request_query_params(self, ctx):
     try:
