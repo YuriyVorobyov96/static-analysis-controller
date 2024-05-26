@@ -1,0 +1,125 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.REMOTE_SERVER }} >> ~/.ssh/known_hosts
+        env:
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y openssh-client curl rsync jq
+
+      - name: Start SSH agent
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Generate random project name
+        run: echo "PROJECT_TEMP_NAME=$(openssl rand -hex 12)" >> $GITHUB_ENV
+
+      - name: Create remote directory and copy code
+        run: |
+          ssh ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_SERVER }} "mkdir -p ${{ secrets.REMOTE_SERVER_TMP_DIR }}/$PROJECT_TEMP_NAME"
+          rsync -avz ./ ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_SERVER }}:${{ secrets.REMOTE_SERVER_TMP_DIR }}/$PROJECT_TEMP_NAME
+          echo "Code copied to ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_SERVER }}:${{ secrets.REMOTE_SERVER_TMP_DIR }}/$PROJECT_TEMP_NAME"
+
+      - name: Send analysis request
+        run: |
+          REQUEST_BODY=$(cat <<EOF
+          {
+            "key": "$PROJECT_TEMP_NAME",
+            "name": "$PROJECT_TEMP_NAME",
+            "source": "${{ secrets.REMOTE_SERVER_TMP_DIR }}/$PROJECT_TEMP_NAME",
+            "mainBranch": "${{ github.ref_name }}"
+          }
+          EOF
+          )
+          echo "Request Body: $REQUEST_BODY"
+          ANALYSIS_RESPONSE=$(curl --connect-timeout 0 --max-time 0 -s -w "\n%{http_code}" -X POST "${{ secrets.REMOTE_SERVER_API_ADDRESS }}/scanner/scan/analysis" \
+               -H "Content-Type: application/json" \
+               -H "Authorization: ${{ secrets.AUTH_TOKEN }}" \
+               -d "$REQUEST_BODY")
+          ANALYSIS_HTTP_STATUS=$(echo "$ANALYSIS_RESPONSE" | tail -n1)
+          if [ "$ANALYSIS_HTTP_STATUS" -ne 200 ]; then
+            echo "Request failed with status code $ANALYSIS_HTTP_STATUS"
+            ssh ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_SERVER }} "rm -rf ${{ secrets.REMOTE_SERVER_TMP_DIR }}/$PROJECT_TEMP_NAME"
+            exit 1
+          fi
+          echo "Waiting for 15 seconds for SonarQube internal work"
+          sleep 15
+        env:
+          REMOTE_SERVER_API_ADDRESS: ${{ secrets.REMOTE_SERVER_API_ADDRESS }}
+          AUTH_TOKEN: ${{ secrets.AUTH_TOKEN }}
+
+      - name: Clean up remote directory
+        run: ssh ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_SERVER }} "rm -rf ${{ secrets.REMOTE_SERVER_TMP_DIR }}/$PROJECT_TEMP_NAME"
+
+      - name: Save project name
+        run: echo "$PROJECT_TEMP_NAME" > project_name.txt
+
+      - name: Upload project name
+        uses: actions/upload-artifact@v2
+        with:
+          name: project_name
+          path: project_name.txt
+
+  fetch_issues:
+    runs-on: ubuntu-latest
+    needs:
+      - analysis
+    if: ${{ needs.analysis.result == 'success' }}
+    steps:
+      - name: Download project name
+        uses: actions/download-artifact@v2
+        with:
+          name: project_name
+
+      - name: Set project name
+        run: |
+          PROJECT_TEMP_NAME=$(cat project_name.txt)
+          echo "PROJECT_TEMP_NAME=$PROJECT_TEMP_NAME" >> $GITHUB_ENV
+
+      - name: Fetch security issues
+        run: |
+          ISSUES_RESPONSE=$(curl -s --connect-timeout 0 --max-time 0 -w "\n%{http_code}" -X GET "${{ secrets.REMOTE_SERVER_API_ADDRESS }}/scanner/issues/get-all-security-issues?name=$PROJECT_TEMP_NAME" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: ${{ secrets.AUTH_TOKEN }}")
+          ISSUES_HTTP_STATUS=$(echo "$ISSUES_RESPONSE" | tail -n1)
+          ISSUES_RESPONSE_BODY=$(echo "$ISSUES_RESPONSE" | sed '$ d')
+          if [ "$ISSUES_HTTP_STATUS" -ne 200 ]; then
+            echo "Request failed with status code $ISSUES_HTTP_STATUS"
+            exit 1
+          fi
+          if [ "$ISSUES_RESPONSE_BODY" != "[]" ]; then
+            echo "::warning:: Warning! Found security issues"
+            echo "$ISSUES_RESPONSE_BODY"
+            echo "$ISSUES_RESPONSE_BODY" > issues_list.json
+            echo "Issues saved to file issues_list.json"
+          fi
+        env:
+          REMOTE_SERVER_API_ADDRESS: ${{ secrets.REMOTE_SERVER_API_ADDRESS }}
+          AUTH_TOKEN: ${{ secrets.AUTH_TOKEN }}
+
+      - name: Upload issues list artifact
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v2
+        with:
+          name: issues_list
+          path: issues_list.json
