@@ -22,6 +22,10 @@ Start with:
 - GET /help - info about
 - GET /docs/openapi - documentation
 
+Testing env examples for pipelines:
+- [GitLab](https://gitlab.com/YuriyVorobyov96/static-analysis-test)
+- [GitHub](https://github.com/YuriyVorobyov96/static-analysis-test)
+
 -----
 
 ## RU
@@ -45,3 +49,7 @@ Start with:
 Начните с запросов:
 - GET /help - общая информация
 - GET /docs/openapi - документация
+
+Примеры тестовых окружений для пайплайнов:
+- [GitLab](https://gitlab.com/YuriyVorobyov96/static-analysis-test)
+- [GitHub](https://github.com/YuriyVorobyov96/static-analysis-test)
