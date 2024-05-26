@@ -9,6 +9,8 @@ class ScanController():
     data = ctx.http.get_request_body(ctx)
 
     try:
+      if not 'key' in data or not isinstance(data['key'], str):
+        raise Exception('"key" must be a string')
       if not 'source' in data or not isinstance(data['source'], str):
         raise Exception('"source" must be a string')
       if not 'token' in data or not isinstance(data['token'], str):
@@ -81,30 +83,4 @@ class ScanController():
       print('Sonar-scanner error:', err)
       return ctx.http.send_bad_request_error(ctx, 'Sonar-scanner error')
 
-    try:
-      payload = {
-        'components': data['key'],
-        'issueStatuses': 'OPEN',
-        'impactSoftwareQualities': 'SECURITY',
-        'p': 1,
-        'ps': 500,
-      }
-
-      all_issues = []
-
-      while True:
-        response = ctx.http.send_request(ctx, 'GET', f'{SONARQUBE_ADDRESS}/api/issues/search', payload, is_internal=True)
-        data = json.loads(response)
-        issues = data.get('issues', [])
-
-        if not issues:
-          break
-
-        all_issues.extend(issues)
-
-        payload['p'] += 1
-
-      return ctx.http.send_result(ctx, 200, json.dumps(all_issues))
-    except Exception as err:
-      print('Sonar error:', err)
-      return ctx.http.send_bad_request_error(ctx, 'Sonar error')
+    return ctx.http.send_result(ctx)
