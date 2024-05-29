@@ -1,0 +1,92 @@
+@startuml
+
+Client -> "App": GET/POST request
+"App" -> "HTTPUtils": get_path_url()
+"HTTPUtils" -> "App": path
+
+note over "App": Handling GET Requests
+
+"App" -> "AppController": /help
+"AppController" -> "Client": send_result()
+
+"App" -> "ProjectController": /scanner/project/search
+"ProjectController" -> "HTTPUtils": get_request_query_params()
+"HTTPUtils" -> "ProjectController": query params
+"ProjectController" -> "SonarQube API": GET /api/projects/search
+"SonarQube API" -> "PostgreSQL": query projects
+"PostgreSQL" -> "SonarQube API": projects data
+"SonarQube API" -> "ProjectController": projects data
+"ProjectController" -> "Client": send_result()
+
+"App" -> "IssuesController": /scanner/issues/search
+"IssuesController" -> "HTTPUtils": get_request_query_params()
+"HTTPUtils" -> "IssuesController": query params
+"IssuesController" -> "SonarQube API": GET /api/issues/search
+"SonarQube API" -> "PostgreSQL": query issues
+"PostgreSQL" -> "SonarQube API": issues data
+"SonarQube API" -> "IssuesController": issues data
+"IssuesController" -> "Client": send_result()
+
+"App" -> "IssuesController": /scanner/issues/get-all-security-issues
+"IssuesController" -> "HTTPUtils": get_request_query_params()
+"HTTPUtils" -> "IssuesController": query params
+loop
+    "IssuesController" -> "SonarQube API": GET /api/issues/search
+    "SonarQube API" -> "PostgreSQL": query issues
+    "PostgreSQL" -> "SonarQube API": issues data
+    "SonarQube API" -> "IssuesController": issues data
+end
+"IssuesController" -> "Client": send_result()
+
+"App" -> "AppController": /docs/raw
+"AppController" -> "Client": send_result()
+
+"App" -> "AppController": /docs/openapi
+"AppController" -> "Client": send_result()
+
+"App" -> "AppController": /docs/openapi.yaml or other files
+"AppController" -> "Client": send_result()
+
+note over "App": Handling POST Requests
+
+"App" -> "ProjectController": /scanner/project/create
+"ProjectController" -> "HTTPUtils": get_request_body()
+"HTTPUtils" -> "ProjectController": request body
+"ProjectController" -> "SonarQube API": POST /api/projects/create
+"SonarQube API" -> "PostgreSQL": create project
+"PostgreSQL" -> "SonarQube API": project created
+"SonarQube API" -> "ProjectController": project created
+"ProjectController" -> "Client": send_result()
+
+"App" -> "TokenController": /scanner/token/create
+"TokenController" -> "HTTPUtils": get_request_body()
+"HTTPUtils" -> "TokenController": request body
+"TokenController" -> "SonarQube API": POST /api/user_tokens/generate
+"SonarQube API" -> "PostgreSQL": generate token
+"PostgreSQL" -> "SonarQube API": token generated
+"SonarQube API" -> "TokenController": token generated
+"TokenController" -> "Client": send_result()
+
+"App" -> "ScanController": /scanner/scan/init
+"ScanController" -> "HTTPUtils": get_request_body()
+"HTTPUtils" -> "ScanController": request body
+"ScanController" -> "Shell": sonar-scanner command
+"Shell" -> "ScanController": scan result
+"ScanController" -> "Client": send_result()
+
+"App" -> "ScanController": /scanner/scan/analysis
+"ScanController" -> "HTTPUtils": get_request_body()
+"HTTPUtils" -> "ScanController": request body
+"ScanController" -> "SonarQube API": POST /api/projects/create
+"SonarQube API" -> "PostgreSQL": create project
+"PostgreSQL" -> "SonarQube API": project created
+"SonarQube API" -> "ScanController": project created
+"ScanController" -> "SonarQube API": POST /api/user_tokens/generate
+"SonarQube API" -> "PostgreSQL": generate token
+"PostgreSQL" -> "SonarQube API": token generated
+"SonarQube API" -> "ScanController": token generated
+"ScanController" -> "Shell": sonar-scanner command
+"Shell" -> "ScanController": scan result
+"ScanController" -> "Client": send_result()
+
+@enduml
