@@ -26,6 +26,11 @@ Testing env examples for pipelines:
 - [GitLab](https://gitlab.com/YuriyVorobyov96/static-analysis-test)
 - [GitHub](https://github.com/YuriyVorobyov96/static-analysis-test)
 
+Testing API:
+Use Postman collection
+- [Collection](./postman/static-analysis-controller.postman_collection.json)
+- [env](./postman/static-analysis-controller.postman_environment.json)
+
 -----
 
 ## RU
@@ -53,3 +58,8 @@ Testing env examples for pipelines:
 Примеры тестовых окружений для пайплайнов:
 - [GitLab](https://gitlab.com/YuriyVorobyov96/static-analysis-test)
 - [GitHub](https://github.com/YuriyVorobyov96/static-analysis-test)
+
+Тестирование API:
+Используйте подготовленную коллекцию Postman
+- [Коллекция](./postman/static-analysis-controller.postman_collection.json)
+- [env](./postman/static-analysis-controller.postman_environment.json)
