@@ -1,3 +1,8 @@
 requests
 python-dotenv
 ruamel.yaml
+sqlalchemy
+pandas
+jinja2
+reportlab
+pg8000

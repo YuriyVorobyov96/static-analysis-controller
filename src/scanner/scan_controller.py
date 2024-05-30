@@ -1,8 +1,18 @@
 import json
 import os
 import subprocess
+from sqlalchemy import create_engine, text
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle
+from reportlab.lib import colors
 
 SONARQUBE_ADDRESS = os.environ.get('SONARQUBE_ADDRESS', '')
+POSTGRES_USER = os.environ.get('POSTGRES_USER', '')
+POSTGRES_PASSWORD = os.environ.get('POSTGRES_PASSWORD', '')
+POSTGRES_HOST = os.environ.get('POSTGRES_HOST', 'localhost')
+POSTGRES_PORT = os.environ.get('POSTGRES_PORT', '5432')
+POSTGRES_DB = os.environ.get('POSTGRES_DB', 'sonar')
 
 class ScanController():
   def init_scan(self, ctx):
@@ -30,6 +40,32 @@ class ScanController():
       return ctx.http.send_bad_request_error(ctx, err)
 
     return ctx.http.send_result(ctx)
+  
+  def scan_report(self, ctx, static_dir):
+    data = ctx.http.get_request_query_params(ctx)
+
+    try:
+      if not 'key' in data or not isinstance(data['key'], str):
+        raise Exception('"key" must be a string')
+    except Exception as err:
+      return ctx.http.send_bad_request_error(ctx, err)
+
+    project_key = data['key']
+
+    try:
+      issues = self.__get_issues_from_db(ctx, project_key)
+      self.__generate_pdf(ctx, issues, project_key, static_dir)
+
+      ctx.http.send_response(ctx, 200)
+      ctx.http.send_header(ctx, 'Content-type', 'application/pdf')
+      ctx.http.end_headers(ctx)
+
+      report_path = os.path.join(static_dir, f'{project_key}_report.pdf')
+
+      with open(report_path, 'rb') as file:
+        return ctx.http.serve_file(ctx, file)
+    except Exception as err:
+      return ctx.http.send_bad_request_error(ctx, err)
 
   def full_analysis(self, ctx):
     data = ctx.http.get_request_body(ctx)
@@ -84,3 +120,51 @@ class ScanController():
       return ctx.http.send_bad_request_error(ctx, 'Sonar-scanner error')
 
     return ctx.http.send_result(ctx)
+
+  def __get_issues_from_db(self, ctx, project_key):
+    try:
+      engine = create_engine(f'postgresql+pg8000://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}')
+      with engine.connect() as conn:
+        query = """
+        SELECT i.severity, i.message, i.line, c.path
+        FROM components c
+            JOIN issues i ON i.component_uuid = c.uuid
+        WHERE c.kee like :project_key
+        """
+        result = conn.execute(text(query), {'project_key': f'{project_key}:%'})
+
+        return result.fetchall()
+    except Exception as err:
+      return ctx.http.send_bad_request_error(ctx, err)
+
+  def __generate_pdf(self, ctx, issues, project_key, static_dir):
+    try:
+      doc = SimpleDocTemplate(f"{static_dir}/{project_key}_report.pdf", pagesize=letter)
+      styles = getSampleStyleSheet()
+      flowables = []
+
+      # Title
+      title = Paragraph(f'Security Issues Report for Project: {project_key}', styles['Title'])
+      flowables.append(title)
+      flowables.append(Paragraph('<br/><br/>', styles['Normal']))
+
+      # Table
+      table_data = [['Severity', 'Message', 'Line', 'Path']]
+      for issue in issues:
+          table_data.append(list(issue))
+
+      table = Table(table_data)
+      table.setStyle(TableStyle([
+          ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+          ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+          ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+          ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+          ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+          ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+          ('GRID', (0, 0), (-1, -1), 1, colors.black),
+      ]))
+
+      flowables.append(table)
+      doc.build(flowables)
+    except Exception as err:
+      return ctx.http.send_bad_request_error(ctx, err)

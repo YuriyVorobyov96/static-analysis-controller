@@ -25,6 +25,10 @@ class App(BaseHTTPRequestHandler):
       cls.doc_driver_dir = Path(__file__).resolve().parent / doc_driver_dir
 
     @classmethod
+    def use_static(cls, static_dir):
+      cls.static_dir = Path(__file__).resolve().parent / static_dir
+
+    @classmethod
     def use_http(cls):
       cls.http = HTTPUtils()
 
@@ -50,6 +54,9 @@ class App(BaseHTTPRequestHandler):
         
         if path == '/scanner/issues/get-all-security-issues':
           return self.issues_controller.get_all_security_issues(self)
+
+        if path == '/scanner/scan/report':
+          return self.scan_controller.scan_report(self, self.static_dir)
 
         if path == '/docs/raw':
           return self.app_controller.get_docs_raw(self, self.doc_dir)
@@ -99,6 +106,9 @@ def run(server_class=HTTPServer, handler_class=BaseHTTPRequestHandler, host='0.0
     handler_class.use_documentation(
       doc_dir = 'documentation',
       doc_driver_dir = 'documentation/swagger'
+    )
+    handler_class.use_static(
+      static_dir = 'static',
     )
 
     httpd = server_class(server_address, handler_class)
