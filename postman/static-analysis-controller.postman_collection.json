@@ -1,0 +1,757 @@
+{
+	"info": {
+		"_postman_id": "bad00766-0c47-46e7-82a8-7688977b2900",
+		"name": "static-analysis-controller",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "10964327"
+	},
+	"item": [
+		{
+			"name": "app",
+			"item": [
+				{
+					"name": "Help message",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{auth-token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/help",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"help"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Documentation RAW (JSON)",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{auth-token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/docs/raw",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"docs",
+								"raw"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Documentation HTML (Swagger UI representation)",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{auth-token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/docs/openapi",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"docs",
+								"openapi"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Helpful application requests"
+		},
+		{
+			"name": "scanner",
+			"item": [
+				{
+					"name": "By domain",
+					"item": [
+						{
+							"name": "issues",
+							"item": [
+								{
+									"name": "Search issues",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{auth-token}}",
+												"type": "text"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{host}}/scanner/issues/search?name=key&status=OPEN&type=SECURITY",
+											"host": [
+												"{{host}}"
+											],
+											"path": [
+												"scanner",
+												"issues",
+												"search"
+											],
+											"query": [
+												{
+													"key": "name",
+													"value": "key"
+												},
+												{
+													"key": "status",
+													"value": "OPEN"
+												},
+												{
+													"key": "type",
+													"value": "SECURITY"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "All security issues by project",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{auth-token}}",
+												"type": "text"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{host}}/scanner/issues/get-all-security-issues?name=key",
+											"host": [
+												"{{host}}"
+											],
+											"path": [
+												"scanner",
+												"issues",
+												"get-all-security-issues"
+											],
+											"query": [
+												{
+													"key": "name",
+													"value": "key"
+												}
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "project",
+							"item": [
+								{
+									"name": "Create project",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{auth-token}}",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"key\": \"key\",\n  \"name\": \"name\",\n  \"mainBranch\": \"main\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{host}}/scanner/project/create",
+											"host": [
+												"{{host}}"
+											],
+											"path": [
+												"scanner",
+												"project",
+												"create"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Search project",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{auth-token}}",
+												"type": "text"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{host}}/scanner/project/search?query=key",
+											"host": [
+												"{{host}}"
+											],
+											"path": [
+												"scanner",
+												"project",
+												"search"
+											],
+											"query": [
+												{
+													"key": "query",
+													"value": "key"
+												}
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "scan",
+							"item": [
+								{
+									"name": "Full scan",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{auth-token}}",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"key\": \"key\",\n  \"name\": \"name\",\n  \"mainBranch\": \"main\",\n  \"source\": \".\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{host}}/scanner/scan/analysis",
+											"host": [
+												"{{host}}"
+											],
+											"path": [
+												"scanner",
+												"scan",
+												"analysis"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Scan Initiation",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{auth-token}}",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"key\": \"key\",\n  \"token\": \"sqp_121ea080b9cd33abf800f406a1009300c66b0a91\",\n  \"source\": \".\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{host}}/scanner/scan/init",
+											"host": [
+												"{{host}}"
+											],
+											"path": [
+												"scanner",
+												"scan",
+												"init"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "token",
+							"item": [
+								{
+									"name": "Create token",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{auth-token}}",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"key\": \"key\",\n  \"name\": \"name\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{host}}/scanner/token/create",
+											"host": [
+												"{{host}}"
+											],
+											"path": [
+												"scanner",
+												"token",
+												"create"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						}
+					],
+					"description": "API requests by domain"
+				},
+				{
+					"name": "Step by step flow",
+					"item": [
+						{
+							"name": "1. Create project",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{auth-token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"key\": \"key\",\n  \"name\": \"name\",\n  \"mainBranch\": \"main\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/scanner/project/create",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"scanner",
+										"project",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "2. Create token",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{auth-token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"key\": \"key\",\n  \"name\": \"name\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/scanner/token/create",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"scanner",
+										"token",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "3. Scan Initiation",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{auth-token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"key\": \"key\",\n  \"token\": \"sqp_121ea080b9cd33abf800f406a1009300c66b0a91\",\n  \"source\": \".\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/scanner/scan/init",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"scanner",
+										"scan",
+										"init"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "4. Search issues",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{auth-token}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/scanner/issues/search?name=key&status=OPEN&type=SECURITY",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"scanner",
+										"issues",
+										"search"
+									],
+									"query": [
+										{
+											"key": "name",
+											"value": "key"
+										},
+										{
+											"key": "status",
+											"value": "OPEN"
+										},
+										{
+											"key": "type",
+											"value": "SECURITY"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "5. (optional) All security issues by project",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{auth-token}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/scanner/issues/get-all-security-issues?name=key",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"scanner",
+										"issues",
+										"get-all-security-issues"
+									],
+									"query": [
+										{
+											"key": "name",
+											"value": "key"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"description": "Step by step flow for analytics"
+				},
+				{
+					"name": "VCS flow",
+					"item": [
+						{
+							"name": "1. Full scan",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{auth-token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"key\": \"key\",\n  \"name\": \"name\",\n  \"mainBranch\": \"main\",\n  \"source\": \".\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/scanner/scan/analysis",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"scanner",
+										"scan",
+										"analysis"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "2. All security issues by project",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{auth-token}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/scanner/issues/get-all-security-issues?name=key",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"scanner",
+										"issues",
+										"get-all-security-issues"
+									],
+									"query": [
+										{
+											"key": "name",
+											"value": "key"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"description": "Flow for ci/cd pipelines in version control system platforms (GitLab/GiHub)"
+				}
+			]
+		}
+	]
+}
