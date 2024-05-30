@@ -2,10 +2,11 @@ import json
 import os
 import subprocess
 from sqlalchemy import create_engine, text
-from reportlab.lib.pagesizes import letter
+from reportlab.lib.pagesizes import letter, landscape, A4
 from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle
 from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle
+from fpdf import FPDF
 
 SONARQUBE_ADDRESS = os.environ.get('SONARQUBE_ADDRESS', '')
 POSTGRES_USER = os.environ.get('POSTGRES_USER', '')
@@ -47,24 +48,31 @@ class ScanController():
     try:
       if not 'key' in data or not isinstance(data['key'], str):
         raise Exception('"key" must be a string')
+      if not 'is_remove' in data or data['is_remove'] not in ['true', 'false']:
+        raise Exception('"is_remove" must be one of [true, false]')
     except Exception as err:
       return ctx.http.send_bad_request_error(ctx, err)
 
     project_key = data['key']
+
+    is_remove_report = data['is_remove'] == 'true'
 
     try:
       issues = self.__get_issues_from_db(ctx, project_key)
 
       report_path = os.path.join(static_dir, f'{project_key}_report.pdf')
 
-      self.__generate_pdf(ctx, issues, report_path, project_key)
+      self.__generate_pdf(ctx, issues, project_key, static_dir)
 
       ctx.http.send_response(ctx, 200)
       ctx.http.send_header(ctx, 'Content-type', 'application/pdf')
       ctx.http.end_headers(ctx)
 
       with open(report_path, 'rb') as file:
-        return ctx.http.serve_file(ctx, file)
+        ctx.http.serve_file(ctx, file)
+
+      if (is_remove_report):
+        os.remove(report_path)
     except Exception as err:
       return ctx.http.send_bad_request_error(ctx, err)
 
@@ -138,34 +146,33 @@ class ScanController():
     except Exception as err:
       return ctx.http.send_bad_request_error(ctx, err)
 
-  def __generate_pdf(self, ctx, issues, report_path, project_key):
+  def __generate_pdf(self, ctx, issues, project_key, static_dir):
     try:
-      doc = SimpleDocTemplate(report_path, pagesize=letter)
+      doc = SimpleDocTemplate(f'{static_dir}/{project_key}_report.pdf', pagesize=landscape(A4))
       styles = getSampleStyleSheet()
-      flowables = []
+      elements = []
 
-      # Title
       title = Paragraph(f'Security Issues Report for Project: {project_key}', styles['Title'])
-      flowables.append(title)
-      flowables.append(Paragraph('<br/><br/>', styles['Normal']))
+      elements.append(title)
+      elements.append(Paragraph('<br/><br/>', styles['Normal']))
 
-      # Table
       table_data = [['Severity', 'Message', 'Line', 'Path']]
       for issue in issues:
-          table_data.append(list(issue))
+        table_data.append(list(issue))
 
       table = Table(table_data)
       table.setStyle(TableStyle([
-          ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-          ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-          ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-          ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-          ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-          ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-          ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('SPAN', (0, 0), (-1, 0)),
       ]))
 
-      flowables.append(table)
-      doc.build(flowables)
+      elements.append(table)
+      doc.build(elements)
     except Exception as err:
       return ctx.http.send_bad_request_error(ctx, err)
