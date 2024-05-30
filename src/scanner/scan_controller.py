@@ -54,13 +54,14 @@ class ScanController():
 
     try:
       issues = self.__get_issues_from_db(ctx, project_key)
-      self.__generate_pdf(ctx, issues, project_key, static_dir)
+
+      report_path = os.path.join(static_dir, f'{project_key}_report.pdf')
+
+      self.__generate_pdf(ctx, issues, report_path, project_key)
 
       ctx.http.send_response(ctx, 200)
       ctx.http.send_header(ctx, 'Content-type', 'application/pdf')
       ctx.http.end_headers(ctx)
-
-      report_path = os.path.join(static_dir, f'{project_key}_report.pdf')
 
       with open(report_path, 'rb') as file:
         return ctx.http.serve_file(ctx, file)
@@ -137,9 +138,9 @@ class ScanController():
     except Exception as err:
       return ctx.http.send_bad_request_error(ctx, err)
 
-  def __generate_pdf(self, ctx, issues, project_key, static_dir):
+  def __generate_pdf(self, ctx, issues, report_path, project_key):
     try:
-      doc = SimpleDocTemplate(f"{static_dir}/{project_key}_report.pdf", pagesize=letter)
+      doc = SimpleDocTemplate(report_path, pagesize=letter)
       styles = getSampleStyleSheet()
       flowables = []
 
