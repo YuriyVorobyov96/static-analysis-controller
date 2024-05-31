@@ -142,7 +142,7 @@ class ScanController():
       engine = create_engine(f'postgresql+pg8000://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}')
       with engine.connect() as conn:
         query = """
-        SELECT i.severity, i.message, i.line, c.path
+        SELECT i.severity, i.message, i.line, c.path, i.tags
         FROM components c
             JOIN issues i ON i.component_uuid = c.uuid
         WHERE c.kee like :project_key
@@ -167,7 +167,10 @@ class ScanController():
       elements.append(title)
       elements.append(Paragraph('<br/><br/>', styles['Normal']))
 
-      table_data = [['Severity', 'Message', 'Line', 'Path']]
+      table_headers = ['Severity', 'Message', 'Line', 'Path', 'Tags']
+
+      table_data = []
+
       for issue in issues:
         try:
             line_number = int(issue['line'])
@@ -178,13 +181,15 @@ class ScanController():
             issue['severity'],
             Paragraph(self.__clean_text(issue['message']), styles['Normal']),
             line_number,
-            Paragraph(self.__clean_text(issue['path']), styles['Normal'])
+            Paragraph(self.__clean_text(issue['path']), styles['Normal']),
+            issue['tags']
         ])
 
       rows_per_page = 50
-      tables = [Table(table_data[i:i+rows_per_page]) for i in range(0, len(table_data), rows_per_page)]
 
-      for table in tables:
+      for i in range(0, len(table_data), rows_per_page):
+        chunk = table_data[i:i + rows_per_page]
+        table = Table([table_headers] + chunk)
         table.setStyle(TableStyle([
           ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
           ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
