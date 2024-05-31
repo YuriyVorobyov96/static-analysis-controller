@@ -1,12 +1,12 @@
 import json
 import os
 import subprocess
-from sqlalchemy import create_engine, text
+import pandas as pd
 from reportlab.lib.pagesizes import letter, landscape, A4
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle
-from fpdf import FPDF
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, PageBreak
+from sqlalchemy import create_engine, text
 
 SONARQUBE_ADDRESS = os.environ.get('SONARQUBE_ADDRESS', '')
 POSTGRES_USER = os.environ.get('POSTGRES_USER', '')
@@ -59,11 +59,17 @@ class ScanController():
 
     try:
       issues = self.__get_issues_from_db(ctx, project_key)
+    except Exception as err:
+      return ctx.http.send_bad_request_error(ctx, err)
 
+    try:
       report_path = os.path.join(static_dir, f'{project_key}_report.pdf')
 
       self.__generate_pdf(ctx, issues, project_key, static_dir)
+    except Exception as err:
+      return ctx.http.send_bad_request_error(ctx, err)
 
+    try:
       ctx.http.send_response(ctx, 200)
       ctx.http.send_header(ctx, 'Content-type', 'application/pdf')
       ctx.http.end_headers(ctx)
@@ -75,6 +81,7 @@ class ScanController():
         os.remove(report_path)
     except Exception as err:
       return ctx.http.send_bad_request_error(ctx, err)
+
 
   def full_analysis(self, ctx):
     data = ctx.http.get_request_body(ctx)
@@ -141,10 +148,14 @@ class ScanController():
         WHERE c.kee like :project_key
         """
         result = conn.execute(text(query), {'project_key': f'{project_key}:%'})
+        df = pd.DataFrame(result.fetchall(), columns=result.keys())
 
-        return result.fetchall()
+        return df.to_dict(orient='records')
     except Exception as err:
       return ctx.http.send_bad_request_error(ctx, err)
+    
+  def __clean_text(self, text):
+    return text.replace('<', '&lt;').replace('>', '&gt;')
 
   def __generate_pdf(self, ctx, issues, project_key, static_dir):
     try:
@@ -158,21 +169,35 @@ class ScanController():
 
       table_data = [['Severity', 'Message', 'Line', 'Path']]
       for issue in issues:
-        table_data.append(list(issue))
+        try:
+            line_number = int(issue['line'])
+        except ValueError:
+            line_number = "N/A" 
 
-      table = Table(table_data)
-      table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black),
-        ('SPAN', (0, 0), (-1, 0)),
-      ]))
+        table_data.append([
+            issue['severity'],
+            Paragraph(self.__clean_text(issue['message']), styles['Normal']),
+            line_number,
+            Paragraph(self.__clean_text(issue['path']), styles['Normal'])
+        ])
 
-      elements.append(table)
+      rows_per_page = 50
+      tables = [Table(table_data[i:i+rows_per_page]) for i in range(0, len(table_data), rows_per_page)]
+
+      for table in tables:
+        table.setStyle(TableStyle([
+          ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+          ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+          ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+          ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+          ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+          ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+          ('GRID', (0, 0), (-1, -1), 1, colors.black),
+          ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ]))
+        elements.append(table)
+        elements.append(PageBreak())
+
       doc.build(elements)
     except Exception as err:
       return ctx.http.send_bad_request_error(ctx, err)

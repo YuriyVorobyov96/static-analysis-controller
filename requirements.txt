@@ -6,3 +6,4 @@ pandas
 jinja2
 reportlab
 pg8000
+pandas
