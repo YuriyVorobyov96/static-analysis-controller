@@ -406,6 +406,58 @@
 										}
 									},
 									"response": []
+								},
+								{
+									"name": "Get scan report",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "{{auth-token}}",
+												"type": "text"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{host}}/scanner/scan/report?key=key&is_remove=true",
+											"host": [
+												"{{host}}"
+											],
+											"path": [
+												"scanner",
+												"scan",
+												"report"
+											],
+											"query": [
+												{
+													"key": "key",
+													"value": "key"
+												},
+												{
+													"key": "is_remove",
+													"value": "true"
+												}
+											]
+										}
+									},
+									"response": []
 								}
 							]
 						},
@@ -613,7 +665,7 @@
 							"response": []
 						},
 						{
-							"name": "5. (optional) All security issues by project",
+							"name": "(optional) All security issues by project",
 							"protocolProfileBehavior": {
 								"disableBodyPruning": true
 							},
@@ -654,6 +706,58 @@
 										{
 											"key": "name",
 											"value": "key"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "5. Get scan report",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{auth-token}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/scanner/scan/report?key=key&is_remove=true",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"scanner",
+										"scan",
+										"report"
+									],
+									"query": [
+										{
+											"key": "key",
+											"value": "key"
+										},
+										{
+											"key": "is_remove",
+											"value": "true"
 										}
 									]
 								}
